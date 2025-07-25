@@ -1,0 +1,6 @@
+streamlit
+scikit-learn
+PyPDF2
+google-api-python-client
+joblib
+requests
