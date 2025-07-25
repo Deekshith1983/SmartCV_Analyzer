@@ -1,0 +1,6 @@
+__pycache__/
+*.pkl
+*.pyc
+*.DS_Store
+secrets.toml
+*.pdf
