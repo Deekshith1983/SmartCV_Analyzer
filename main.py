@@ -17,132 +17,84 @@ st.set_page_config(
 
 # ============================= VANTA BACKGROUND =============================
 st.markdown("""
-<!-- ========== AURORA GLASS UI THEME ========== -->
-<div class="aurora-bg"></div>
-
 <style>
 
-/* ---------- Background ---------- */
-.stApp {
-    background: radial-gradient(circle at 20% 20%, #1a2a6c, transparent 40%),
-                radial-gradient(circle at 80% 30%, #00c6ff, transparent 35%),
-                radial-gradient(circle at 50% 80%, #7f00ff, transparent 40%),
-                #0b1020;
-    animation: auroraMove 22s ease-in-out infinite;
-    color: #ffffff;
+/* ========== HORIZONTAL JOB SCROLLER ========== */
+.job-scroll-container {
+    display: flex;
+    gap: 1.2rem;
+    overflow-x: auto;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
 }
 
-@keyframes auroraMove {
-    0%   { background-position: 0% 0%, 100% 0%, 50% 100%; }
-    50%  { background-position: 100% 50%, 0% 50%, 50% 0%; }
-    100% { background-position: 0% 0%, 100% 0%, 50% 100%; }
+.job-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+.job-scroll-container::-webkit-scrollbar-thumb {
+    background: #cfd8ff;
+    border-radius: 10px;
 }
 
-/* ---------- Layout ---------- */
-.block-container {
-    padding: 2.5rem 3rem;
-}
-
-/* ---------- Title ---------- */
-h1 {
-    text-align: center;
-    font-size: 3.2rem;
-    font-weight: 900;
-    letter-spacing: 1px;
-    background: linear-gradient(90deg, #00eaff, #9b5cff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: fadeDown 1.2s ease;
-}
-
-@keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ---------- Glass Cards ---------- */
-.glass-card,
-.job-card,
-section[data-testid="stFileUploader"],
-textarea {
-    background: rgba(255, 255, 255, 0.10) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.18);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
-}
-
-/* ---------- File Uploader ---------- */
-section[data-testid="stFileUploader"] {
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-/* ---------- Text Area ---------- */
-textarea {
-    color: #ffffff !important;
-    font-size: 0.95rem;
-}
-
-/* ---------- Buttons ---------- */
-.stButton > button {
-    background: linear-gradient(135deg, #00eaff, #9b5cff);
-    color: #fff;
-    border-radius: 32px;
-    padding: 0.7rem 2.2rem;
-    font-weight: 700;
-    font-size: 1.1rem;
-    border: none;
-    transition: all 0.35s ease;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-}
-
-.stButton > button:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-}
-
-/* ---------- Job Cards ---------- */
-.job-card {
-    padding: 1.3rem;
-    margin-bottom: 1.2rem;
-    animation: fadeUp 0.8s ease forwards;
-}
-
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(25px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ---------- Links ---------- */
-a {
-    color: #00eaff !important;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-/* ---------- Alerts ---------- */
-.stAlert {
-    border-radius: 16px;
-    backdrop-filter: blur(12px);
-}
-
-/* ---------- Videos ---------- */
-iframe {
+.job-scroll-card {
+    min-width: 300px;
+    max-width: 320px;
+    background: #ffffff;
     border-radius: 18px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+    padding: 1.2rem;
+    scroll-snap-align: start;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
 }
 
-/* ---------- Section headers ---------- */
-h2, h3 {
+.job-scroll-card:hover {
+    transform: translateY(-6px);
+}
+
+.job-scroll-card h4 {
+    margin-bottom: 0.4rem;
     font-weight: 700;
-    margin-top: 2rem;
-    animation: fadeUp 0.8s ease;
+    color: #1f2937;
+}
+
+.job-scroll-card p {
+    font-size: 0.9rem;
+    color: #4b5563;
+}
+
+.job-scroll-card a {
+    display: inline-block;
+    margin-top: 0.6rem;
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+/* ========== UPLOAD INTERFACE (LIKE IMAGE) ========== */
+section[data-testid="stFileUploader"] {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 2rem;
+    border: 2px dashed #d1d5db;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+section[data-testid="stFileUploader"] label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+section[data-testid="stFileUploader"] small {
+    color: #6b7280;
+}
+
+/* ========== INPUT TEXT AREA CLEAN LOOK ========== */
+textarea {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 16px !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
 }
 
 </style>
@@ -226,21 +178,21 @@ if uploaded_file:
         st.success(f"✅ Predicted Job Role: **{result}**")
 
         # ============================= JOBS =============================
-        st.markdown("## 💼 Live Job Openings")
-        jobs = fetch_job_listings(result)
+       st.markdown("## 💼 Live Job Openings")
 
-        if jobs:
-            for job in jobs:
-                st.markdown(f"""
-                <div class="job-card">
-                    <h4>{job.get('title','N/A')}</h4>
-                    <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
-                    <p>📍 {job.get('location',{}).get('display_name','N/A')}</p>
-                    <a href="{job.get('redirect_url','#')}" target="_blank">🔗 Apply Now</a>
-                </div>
-                """, unsafe_allow_html=True)
-        else:
-            st.warning("No jobs found")
+        st.markdown('<div class="job-scroll-container">', unsafe_allow_html=True)
+
+        for job in jobs:
+            st.markdown(f"""
+            <div class="job-scroll-card">
+            <h4>{job.get('title','N/A')}</h4>
+            <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
+            <p>📍 {job.get('location',{}).get('display_name','N/A')}</p>
+            <a href="{job.get('redirect_url','#')}" target="_blank">Apply →</a>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
 
         # ============================= VIDEOS =============================
         st.markdown("## 🎥 Preparation Videos")
