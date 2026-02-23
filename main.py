@@ -17,67 +17,100 @@ st.set_page_config(
 
 # ============================= VANTA BACKGROUND =============================
 st.markdown("""
+<!-- ========== ANIMATED BACKGROUND (CSS + VANTA) ========== -->
 <div id="vanta-bg"></div>
 
 <style>
+/* ---- Animated gradient fallback (always works) ---- */
+.stApp {
+    background: linear-gradient(
+        -45deg,
+        #0f2027,
+        #203a43,
+        #2c5364,
+        #1a2980,
+        #26d0ce
+    );
+    background-size: 400% 400%;
+    animation: gradientBG 18s ease infinite;
+}
+
+/* Gradient keyframes */
+@keyframes gradientBG {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ---- VANTA canvas layer ---- */
 #vanta-bg {
     position: fixed;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    top: 0;
-    left: 0;
+    inset: 0;
+    z-index: -10;
 }
+
+/* ---- Glassmorphism UI ---- */
 .block-container {
     padding: 2.5rem 3rem;
 }
-html, body, [class*="css"] {
-    font-family: 'Segoe UI', sans-serif;
-    color: #ffffff;
-}
-h1 {
-    text-align: center;
-    font-size: 3rem;
-    font-weight: 800;
-    background: linear-gradient(90deg, #00c6ff, #7f00ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+
 .job-card {
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
     padding: 1.2rem;
-    border-radius: 16px;
     margin-bottom: 1rem;
-    border-left: 6px solid #00c6ff;
+    border-left: 6px solid #00eaff;
 }
+
+/* ---- Buttons ---- */
 .stButton > button {
-    background: linear-gradient(90deg, #00c6ff, #7f00ff);
+    background: linear-gradient(90deg, #00eaff, #7f00ff);
     border-radius: 30px;
-    padding: 0.6rem 2rem;
     font-weight: 600;
-    font-size: 1.1rem;
+    transition: transform 0.3s ease;
 }
+
+.stButton > button:hover {
+    transform: scale(1.06);
+}
+
+/* ---- Text areas ---- */
 textarea {
     background: rgba(0,0,0,0.45) !important;
     color: white !important;
 }
-iframe {
-    border-radius: 16px;
+
+/* ---- Titles ---- */
+h1 {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #00eaff, #7f00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+<!-- VANTA scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+
 <script>
-VANTA.NET({
-  el: "#vanta-bg",
-  color: 0x00c6ff,
-  backgroundColor: 0x0f2027,
-  points: 12.0,
-  maxDistance: 22.0,
-  spacing: 18.0
-})
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.VANTA) {
+        VANTA.NET({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            color: 0x00eaff,
+            backgroundColor: 0x0f2027,
+            points: 14.0,
+            maxDistance: 22.0,
+            spacing: 18.0
+        });
+    }
+});
 </script>
 """, unsafe_allow_html=True)
 
