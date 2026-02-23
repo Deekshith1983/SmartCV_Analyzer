@@ -163,20 +163,80 @@ if uploaded_file:
 
         # ============================= JOB CARDS (LEFT → RIGHT) =============================
         st.markdown("## 💼 Live Job Openings")
+
         jobs = fetch_job_listings(result)
 
-        cards = '<div class="job-scroll">'
+        job_cards_html = """
+    <style>
+.job-carousel {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem 0 1.5rem 0;
+    scrollbar-width: thin;
+}
+
+.job-carousel::-webkit-scrollbar {
+    height: 8px;
+}
+.job-carousel::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+.job-card {
+    min-width: 300px;
+    max-width: 320px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 1.4rem;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.job-card:hover {
+    transform: translateY(-6px);
+}
+
+.job-card h4 {
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.job-card p {
+    font-size: 0.92rem;
+    color: #4b5563;
+    margin: 0.25rem 0;
+}
+
+.job-card a {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+}
+    </style>
+
+    <div class="job-carousel">
+"""
+
         for job in jobs:
-            cards += f"""
+            job_cards_html += f"""
             <div class="job-card">
                 <h4>{job.get('title','N/A')}</h4>
                 <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
-                <p>📍 {job.get('location',{}).get('display_name','N/A')}</p>
+                <p>📍 {job.get('location',{}).get('display_name','India')}</p>
                 <a href="{job.get('redirect_url','#')}" target="_blank">Apply →</a>
             </div>
             """
-        cards += '</div>'
-        st.markdown(cards, unsafe_allow_html=True)
+
+        job_cards_html += "</div>"
+
+        st.markdown(job_cards_html, unsafe_allow_html=True)
 
         # ============================= VIDEOS =============================
         st.markdown("## 🎥 Preparation Videos")
