@@ -7,6 +7,7 @@ import random
 import requests
 import base64
 from googleapiclient.discovery import build
+from streamlit.components.v1 import html
 
 
 # ============================= PAGE CONFIG =============================
@@ -16,7 +17,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ============================= EXISTING BACKGROUND (UNCHANGED) =============================
+# ============================= BACKGROUND (UNCHANGED) =============================
 st.markdown("""
 <style>
 .stApp {
@@ -38,7 +39,7 @@ st.markdown("""
     100% { background-position: 0% 50%; }
 }
 
-/* ================= UPLOAD UI ================= */
+/* ===== Upload UI ===== */
 section[data-testid="stFileUploader"] {
     background: #ffffff;
     border-radius: 22px;
@@ -47,66 +48,58 @@ section[data-testid="stFileUploader"] {
     box-shadow: 0 12px 30px rgba(0,0,0,0.08);
 }
 
-section[data-testid="stFileUploader"] label {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #111827;
-}
-
-/* ================= PDF PREVIEW ================= */
-.pdf-preview {
+/* ===== PDF Preview ===== */
+.pdf-box {
     background: #ffffff;
     border-radius: 18px;
-    padding: 1rem;
+    padding: 0.8rem;
     box-shadow: 0 12px 30px rgba(0,0,0,0.12);
 }
 
-/* ================= HORIZONTAL JOB SCROLL ================= */
-.job-scroll-container {
+/* ===== Horizontal Job Scroll ===== */
+.job-scroll {
     display: flex;
-    gap: 1.3rem;
+    flex-wrap: nowrap;
+    gap: 1.2rem;
     overflow-x: auto;
     padding: 1rem 0 1.5rem 0;
-    scroll-snap-type: x mandatory;
 }
 
-.job-scroll-container::-webkit-scrollbar {
+.job-scroll::-webkit-scrollbar {
     height: 8px;
 }
-.job-scroll-container::-webkit-scrollbar-thumb {
+.job-scroll::-webkit-scrollbar-thumb {
     background: #c7d2fe;
     border-radius: 10px;
 }
 
-/* ================= JOB CARD ================= */
-.job-scroll-card {
-    min-width: 320px;
-    max-width: 340px;
+/* ===== Job Card ===== */
+.job-card {
+    flex: 0 0 320px;
     background: #ffffff;
     border-radius: 20px;
     padding: 1.4rem;
-    scroll-snap-align: start;
     box-shadow: 0 14px 30px rgba(0,0,0,0.10);
     transition: transform 0.3s ease;
 }
 
-.job-scroll-card:hover {
+.job-card:hover {
     transform: translateY(-6px);
 }
 
-.job-scroll-card h4 {
+.job-card h4 {
     margin-bottom: 0.4rem;
     font-weight: 700;
     color: #1f2937;
 }
 
-.job-scroll-card p {
+.job-card p {
     font-size: 0.92rem;
     color: #4b5563;
     margin: 0.2rem 0;
 }
 
-.job-scroll-card a {
+.job-card a {
     display: inline-block;
     margin-top: 0.7rem;
     color: #4f46e5;
@@ -147,7 +140,7 @@ def fetch_random_youtube_videos(query, fetch_count=10, display_count=3):
 
 
 # ============================= ADZUNA JOB SEARCH =============================
-def fetch_job_listings(query, location="India", max_results=5):
+def fetch_job_listings(query, max_results=5):
     url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
     params = {
         "app_id": st.secrets["api_keys"]["adzuna_app_id"],
@@ -155,8 +148,7 @@ def fetch_job_listings(query, location="India", max_results=5):
         "what": query,
         "results_per_page": max_results
     }
-    response = requests.get(url, params=params)
-    return response.json().get("results", [])
+    return requests.get(url, params=params).json().get("results", [])
 
 
 # ============================= RESUME EXTRACTION =============================
@@ -172,34 +164,35 @@ def predict_job(resume_text):
     return pred[0] if isinstance(pred[0], str) else encoder.inverse_transform(pred.astype(int))[0]
 
 
-# ============================= PDF PREVIEW =============================
+# ============================= PDF PREVIEW (CHROME SAFE) =============================
 def show_pdf(file):
-    base64_pdf = base64.b64encode(file.read()).decode("utf-8")
-    pdf_display = f"""
-    <iframe
-        src="data:application/pdf;base64,{base64_pdf}"
-        width="100%"
-        height="500px"
-        style="border:none;"
-    ></iframe>
-    """
-    st.markdown(f'<div class="pdf-preview">{pdf_display}</div>', unsafe_allow_html=True)
+    pdf_bytes = file.read()
+    b64 = base64.b64encode(pdf_bytes).decode()
+
+    html(f"""
+    <div class="pdf-box">
+        <object
+            data="data:application/pdf;base64,{b64}"
+            type="application/pdf"
+            width="100%"
+            height="520px">
+            <p>PDF preview not supported.</p>
+        </object>
+    </div>
+    """, height=550)
 
 
 # ============================= UI =============================
 st.title("🎯 Resume Job Predictor")
-st.write("Upload your resume → Preview → Predict job → Explore jobs")
+st.write("Upload your resume → Preview → Predict → Apply")
 
 uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
 
 if uploaded_file:
     uploaded_file.seek(0)
-
-    # ---- PDF PREVIEW (NEW) ----
     st.subheader("📄 Resume Preview")
     show_pdf(uploaded_file)
 
-    # ---- TEXT EXTRACTION (HIDDEN FROM UI) ----
     uploaded_file.seek(0)
     resume_text = extract_text_from_resume(uploaded_file)
 
@@ -207,21 +200,24 @@ if uploaded_file:
         result = predict_job(resume_text)
         st.success(f"✅ Predicted Job Role: **{result}**")
 
-        # ============================= JOB CARDS =============================
+        # ============================= HORIZONTAL JOB CARDS =============================
         st.markdown("## 💼 Live Job Openings")
+
         jobs = fetch_job_listings(result)
 
-        st.markdown('<div class="job-scroll-container">', unsafe_allow_html=True)
+        job_cards_html = '<div class="job-scroll">'
         for job in jobs:
-            st.markdown(f"""
-            <div class="job-scroll-card">
+            job_cards_html += f"""
+            <div class="job-card">
                 <h4>{job.get('title','N/A')}</h4>
                 <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
                 <p>📍 {job.get('location',{}).get('display_name','N/A')}</p>
                 <a href="{job.get('redirect_url','#')}" target="_blank">Apply →</a>
             </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+            """
+        job_cards_html += '</div>'
+
+        st.markdown(job_cards_html, unsafe_allow_html=True)
 
         # ============================= VIDEOS =============================
         st.markdown("## 🎥 Preparation Videos")
