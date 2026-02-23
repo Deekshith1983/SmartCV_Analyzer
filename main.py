@@ -46,135 +46,13 @@ section[data-testid="stFileUploader"] {
     box-shadow: 0 12px 30px rgba(0,0,0,0.08);
 }
 
-/* Horizontal Job Scroll */
-.job-scroll {
-    display: flex;
-    gap: 1.2rem;
-    overflow-x: auto;
-    padding: 1rem 0 1.5rem 0;
-}
-.job-scroll::-webkit-scrollbar {
-    height: 8px;
-}
-.job-scroll::-webkit-scrollbar-thumb {
-    background: #c7d2fe;
-    border-radius: 10px;
-}
-
-/* Job Card */
-.job-card {
-    flex: 0 0 320px;
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 1.4rem;
-    box-shadow: 0 14px 30px rgba(0,0,0,0.10);
-    transition: transform 0.3s ease;
-}
-.job-card:hover {
-    transform: translateY(-6px);
-}
-.job-card h4 {
-    margin-bottom: 0.4rem;
-    font-weight: 700;
-}
-.job-card p {
-    font-size: 0.92rem;
-    margin: 0.2rem 0;
-}
-.job-card a {
-    color: #4f46e5;
-    font-weight: 600;
-    text-decoration: none;
-}
-</style>
-""", unsafe_allow_html=True)
-
-
-# ============================= LOAD ML MODELS =============================
-BASE_DIR = os.path.dirname(__file__)
-clf = joblib.load(os.path.join(BASE_DIR, "clf.pkl"))
-tfidf = joblib.load(os.path.join(BASE_DIR, "tfidf.pkl"))
-encoder = joblib.load(os.path.join(BASE_DIR, "encoder.pkl"))
-
-
-# ============================= YOUTUBE API =============================
-def fetch_random_youtube_videos(query, fetch_count=10, display_count=3):
-    youtube = build(
-        "youtube",
-        "v3",
-        developerKey=st.secrets["api_keys"]["youtube"]
-    )
-    request = youtube.search().list(
-        q=query,
-        part="snippet",
-        type="video",
-        maxResults=fetch_count,
-        safeSearch="none"
-    )
-    response = request.execute()
-    videos = [
-        f"https://www.youtube.com/watch?v={item['id']['videoId']}"
-        for item in response.get("items", [])
-    ]
-    return random.sample(videos, min(display_count, len(videos)))
-
-
-# ============================= ADZUNA JOB SEARCH =============================
-def fetch_job_listings(query, max_results=5):
-    url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
-    params = {
-        "app_id": st.secrets["api_keys"]["adzuna_app_id"],
-        "app_key": st.secrets["api_keys"]["adzuna_app_key"],
-        "what": query,
-        "results_per_page": max_results
-    }
-    return requests.get(url, params=params).json().get("results", [])
-
-
-# ============================= RESUME EXTRACTION =============================
-def extract_text_from_resume(file):
-    reader = PyPDF2.PdfReader(file)
-    return "".join(page.extract_text() for page in reader.pages)
-
-
-# ============================= JOB PREDICTION =============================
-def predict_job(resume_text):
-    X_vec = tfidf.transform([resume_text])
-    pred = clf.predict(X_vec)
-    return pred[0] if isinstance(pred[0], str) else encoder.inverse_transform(pred.astype(int))[0]
-
-
-# ============================= UI =============================
-st.title("🎯 Resume Job Predictor")
-st.write("Upload your resume → Preview → Predict → Apply")
-
-uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
-
-if uploaded_file:
-    # ✅ THIS IS THE FIX — NATIVE PDF PREVIEW
-    st.subheader("📄 Resume Preview")
-    st.pdf(uploaded_file)
-
-    resume_text = extract_text_from_resume(uploaded_file)
-
-    if st.button("🔍 Analyze Resume"):
-        result = predict_job(resume_text)
-        st.success(f"✅ Predicted Job Role: **{result}**")
-
-        # ============================= JOB CARDS (LEFT → RIGHT) =============================
-        st.markdown("## 💼 Live Job Openings")
-
-        jobs = fetch_job_listings(result)
-
-        job_cards_html = """
-    <style>
+/* ===== Horizontal Job Carousel ===== */
 .job-carousel {
     display: flex;
     flex-direction: row;
     gap: 1.5rem;
     overflow-x: auto;
     padding: 1rem 0 1.5rem 0;
-    scrollbar-width: thin;
 }
 
 .job-carousel::-webkit-scrollbar {
@@ -185,6 +63,7 @@ if uploaded_file:
     border-radius: 10px;
 }
 
+/* Job Card */
 .job-card {
     min-width: 300px;
     max-width: 320px;
@@ -219,26 +98,97 @@ if uploaded_file:
     color: #2563eb;
     text-decoration: none;
 }
-    </style>
+</style>
+""", unsafe_allow_html=True)
 
-    <div class="job-carousel">
-"""
 
-        for job in jobs:
-            job_cards_html += f"""
-            <div class="job-card">
-                <h4>{job.get('title','N/A')}</h4>
-                <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
-                <p>📍 {job.get('location',{}).get('display_name','India')}</p>
-                <a href="{job.get('redirect_url','#')}" target="_blank">Apply →</a>
-            </div>
-            """
+# ============================= LOAD ML MODELS =============================
+BASE_DIR = os.path.dirname(__file__)
+clf = joblib.load(os.path.join(BASE_DIR, "clf.pkl"))
+tfidf = joblib.load(os.path.join(BASE_DIR, "tfidf.pkl"))
+encoder = joblib.load(os.path.join(BASE_DIR, "encoder.pkl"))
 
-        job_cards_html += "</div>"
 
-        st.markdown(job_cards_html, unsafe_allow_html=True)
+# ============================= YOUTUBE API =============================
+def fetch_random_youtube_videos(query, fetch_count=10, display_count=3):
+    youtube = build(
+        "youtube",
+        "v3",
+        developerKey=st.secrets["api_keys"]["youtube"]
+    )
+    request = youtube.search().list(
+        q=query,
+        part="snippet",
+        type="video",
+        maxResults=fetch_count,
+        safeSearch="none"
+    )
+    response = request.execute()
+    return [
+        f"https://www.youtube.com/watch?v={item['id']['videoId']}"
+        for item in response.get("items", [])
+    ][:display_count]
 
-        # ============================= VIDEOS =============================
+
+# ============================= ADZUNA JOB SEARCH =============================
+def fetch_job_listings(query, max_results=5):
+    url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
+    params = {
+        "app_id": st.secrets["api_keys"]["adzuna_app_id"],
+        "app_key": st.secrets["api_keys"]["adzuna_app_key"],
+        "what": query,
+        "results_per_page": max_results
+    }
+    return requests.get(url, params=params).json().get("results", [])
+
+
+# ============================= RESUME EXTRACTION =============================
+def extract_text_from_resume(file):
+    reader = PyPDF2.PdfReader(file)
+    return "".join(page.extract_text() for page in reader.pages)
+
+
+# ============================= JOB PREDICTION =============================
+def predict_job(resume_text):
+    X_vec = tfidf.transform([resume_text])
+    pred = clf.predict(X_vec)
+    return pred[0] if isinstance(pred[0], str) else encoder.inverse_transform(pred.astype(int))[0]
+
+
+# ============================= UI =============================
+st.title("🎯 Resume Job Predictor")
+st.write("Upload your resume → Predict job → Explore jobs")
+
+uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
+
+if uploaded_file:
+    resume_text = extract_text_from_resume(uploaded_file)
+
+    if st.button("🔍 Analyze Resume"):
+        result = predict_job(resume_text)
+        st.success(f"✅ Predicted Job Role: **{result}**")
+
+        # ============================= CAROUSEL (MUST BE FIRST) =============================
+        with st.container():
+            st.markdown("## 💼 Live Job Openings")
+
+            jobs = fetch_job_listings(result)
+
+            job_cards_html = '<div class="job-carousel">'
+            for job in jobs:
+                job_cards_html += f"""
+                <div class="job-card">
+                    <h4>{job.get('title','N/A')}</h4>
+                    <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
+                    <p>📍 {job.get('location',{}).get('display_name','India')}</p>
+                    <a href="{job.get('redirect_url','#')}" target="_blank">Apply →</a>
+                </div>
+                """
+            job_cards_html += "</div>"
+
+            st.markdown(job_cards_html, unsafe_allow_html=True)
+
+        # ============================= VIDEOS (AFTER CAROUSEL) =============================
         st.markdown("## 🎥 Preparation Videos")
         col1, col2 = st.columns(2)
 
