@@ -5,9 +5,7 @@ import PyPDF2
 import os
 import random
 import requests
-import base64
 from googleapiclient.discovery import build
-from streamlit.components.v1 import html
 
 
 # ============================= PAGE CONFIG =============================
@@ -39,7 +37,7 @@ st.markdown("""
     100% { background-position: 0% 50%; }
 }
 
-/* ===== Upload UI ===== */
+/* Upload UI */
 section[data-testid="stFileUploader"] {
     background: #ffffff;
     border-radius: 22px;
@@ -48,23 +46,13 @@ section[data-testid="stFileUploader"] {
     box-shadow: 0 12px 30px rgba(0,0,0,0.08);
 }
 
-/* ===== PDF Preview ===== */
-.pdf-box {
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 0.8rem;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-}
-
-/* ===== Horizontal Job Scroll ===== */
+/* Horizontal Job Scroll */
 .job-scroll {
     display: flex;
-    flex-wrap: nowrap;
     gap: 1.2rem;
     overflow-x: auto;
     padding: 1rem 0 1.5rem 0;
 }
-
 .job-scroll::-webkit-scrollbar {
     height: 8px;
 }
@@ -73,7 +61,7 @@ section[data-testid="stFileUploader"] {
     border-radius: 10px;
 }
 
-/* ===== Job Card ===== */
+/* Job Card */
 .job-card {
     flex: 0 0 320px;
     background: #ffffff;
@@ -82,26 +70,18 @@ section[data-testid="stFileUploader"] {
     box-shadow: 0 14px 30px rgba(0,0,0,0.10);
     transition: transform 0.3s ease;
 }
-
 .job-card:hover {
     transform: translateY(-6px);
 }
-
 .job-card h4 {
     margin-bottom: 0.4rem;
     font-weight: 700;
-    color: #1f2937;
 }
-
 .job-card p {
     font-size: 0.92rem;
-    color: #4b5563;
     margin: 0.2rem 0;
 }
-
 .job-card a {
-    display: inline-block;
-    margin-top: 0.7rem;
     color: #4f46e5;
     font-weight: 600;
     text-decoration: none;
@@ -164,24 +144,6 @@ def predict_job(resume_text):
     return pred[0] if isinstance(pred[0], str) else encoder.inverse_transform(pred.astype(int))[0]
 
 
-# ============================= PDF PREVIEW (CHROME SAFE) =============================
-def show_pdf(file):
-    pdf_bytes = file.read()
-    b64 = base64.b64encode(pdf_bytes).decode()
-
-    html(f"""
-    <div class="pdf-box">
-        <object
-            data="data:application/pdf;base64,{b64}"
-            type="application/pdf"
-            width="100%"
-            height="520px">
-            <p>PDF preview not supported.</p>
-        </object>
-    </div>
-    """, height=550)
-
-
 # ============================= UI =============================
 st.title("🎯 Resume Job Predictor")
 st.write("Upload your resume → Preview → Predict → Apply")
@@ -189,25 +151,23 @@ st.write("Upload your resume → Preview → Predict → Apply")
 uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
 
 if uploaded_file:
-    uploaded_file.seek(0)
+    # ✅ THIS IS THE FIX — NATIVE PDF PREVIEW
     st.subheader("📄 Resume Preview")
-    show_pdf(uploaded_file)
+    st.pdf(uploaded_file)
 
-    uploaded_file.seek(0)
     resume_text = extract_text_from_resume(uploaded_file)
 
     if st.button("🔍 Analyze Resume"):
         result = predict_job(resume_text)
         st.success(f"✅ Predicted Job Role: **{result}**")
 
-        # ============================= HORIZONTAL JOB CARDS =============================
+        # ============================= JOB CARDS (LEFT → RIGHT) =============================
         st.markdown("## 💼 Live Job Openings")
-
         jobs = fetch_job_listings(result)
 
-        job_cards_html = '<div class="job-scroll">'
+        cards = '<div class="job-scroll">'
         for job in jobs:
-            job_cards_html += f"""
+            cards += f"""
             <div class="job-card">
                 <h4>{job.get('title','N/A')}</h4>
                 <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
@@ -215,9 +175,8 @@ if uploaded_file:
                 <a href="{job.get('redirect_url','#')}" target="_blank">Apply →</a>
             </div>
             """
-        job_cards_html += '</div>'
-
-        st.markdown(job_cards_html, unsafe_allow_html=True)
+        cards += '</div>'
+        st.markdown(cards, unsafe_allow_html=True)
 
         # ============================= VIDEOS =============================
         st.markdown("## 🎥 Preparation Videos")
