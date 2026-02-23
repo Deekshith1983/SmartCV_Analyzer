@@ -5,6 +5,7 @@ import PyPDF2
 import os
 import random
 import requests
+import base64
 from googleapiclient.discovery import build
 
 
@@ -15,16 +16,57 @@ st.set_page_config(
     layout="wide"
 )
 
-# ============================= VANTA BACKGROUND =============================
+# ============================= EXISTING BACKGROUND (UNCHANGED) =============================
 st.markdown("""
 <style>
+.stApp {
+    background: linear-gradient(
+        -45deg,
+        #0f2027,
+        #203a43,
+        #2c5364,
+        #1a2980,
+        #26d0ce
+    );
+    background-size: 400% 400%;
+    animation: gradientBG 18s ease infinite;
+}
 
-/* ========== HORIZONTAL JOB SCROLLER ========== */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ================= UPLOAD UI ================= */
+section[data-testid="stFileUploader"] {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 2.5rem;
+    border: 2px dashed #d1d5db;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+section[data-testid="stFileUploader"] label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+/* ================= PDF PREVIEW ================= */
+.pdf-preview {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 1rem;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+/* ================= HORIZONTAL JOB SCROLL ================= */
 .job-scroll-container {
     display: flex;
-    gap: 1.2rem;
+    gap: 1.3rem;
     overflow-x: auto;
-    padding: 1rem 0;
+    padding: 1rem 0 1.5rem 0;
     scroll-snap-type: x mandatory;
 }
 
@@ -32,18 +74,19 @@ st.markdown("""
     height: 8px;
 }
 .job-scroll-container::-webkit-scrollbar-thumb {
-    background: #cfd8ff;
+    background: #c7d2fe;
     border-radius: 10px;
 }
 
+/* ================= JOB CARD ================= */
 .job-scroll-card {
-    min-width: 300px;
-    max-width: 320px;
+    min-width: 320px;
+    max-width: 340px;
     background: #ffffff;
-    border-radius: 18px;
-    padding: 1.2rem;
+    border-radius: 20px;
+    padding: 1.4rem;
     scroll-snap-align: start;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.10);
     transition: transform 0.3s ease;
 }
 
@@ -58,47 +101,21 @@ st.markdown("""
 }
 
 .job-scroll-card p {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: #4b5563;
+    margin: 0.2rem 0;
 }
 
 .job-scroll-card a {
     display: inline-block;
-    margin-top: 0.6rem;
+    margin-top: 0.7rem;
     color: #4f46e5;
     font-weight: 600;
+    text-decoration: none;
 }
-
-/* ========== UPLOAD INTERFACE (LIKE IMAGE) ========== */
-section[data-testid="stFileUploader"] {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 2rem;
-    border: 2px dashed #d1d5db;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-}
-
-section[data-testid="stFileUploader"] label {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #111827;
-}
-
-section[data-testid="stFileUploader"] small {
-    color: #6b7280;
-}
-
-/* ========== INPUT TEXT AREA CLEAN LOOK ========== */
-textarea {
-    background: #ffffff !important;
-    color: #111827 !important;
-    border-radius: 16px !important;
-    border: 1px solid #e5e7eb !important;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
-}
-
 </style>
 """, unsafe_allow_html=True)
+
 
 # ============================= LOAD ML MODELS =============================
 BASE_DIR = os.path.dirname(__file__)
@@ -129,23 +146,17 @@ def fetch_random_youtube_videos(query, fetch_count=10, display_count=3):
     return random.sample(videos, min(display_count, len(videos)))
 
 
-# ============================= ADZUNA JOB SEARCH (REPLACED) =============================
+# ============================= ADZUNA JOB SEARCH =============================
 def fetch_job_listings(query, location="India", max_results=5):
     url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
     params = {
         "app_id": st.secrets["api_keys"]["adzuna_app_id"],
         "app_key": st.secrets["api_keys"]["adzuna_app_key"],
         "what": query,
-        "results_per_page": max_results,
-        "content-type": "application/json"
+        "results_per_page": max_results
     }
-    try:
-        response = requests.get(url, params=params)
-        data = response.json()
-        return data.get("results", [])
-    except Exception as e:
-        st.error(f"Job API error: {e}")
-        return []
+    response = requests.get(url, params=params)
+    return response.json().get("results", [])
 
 
 # ============================= RESUME EXTRACTION =============================
@@ -161,37 +172,55 @@ def predict_job(resume_text):
     return pred[0] if isinstance(pred[0], str) else encoder.inverse_transform(pred.astype(int))[0]
 
 
+# ============================= PDF PREVIEW =============================
+def show_pdf(file):
+    base64_pdf = base64.b64encode(file.read()).decode("utf-8")
+    pdf_display = f"""
+    <iframe
+        src="data:application/pdf;base64,{base64_pdf}"
+        width="100%"
+        height="500px"
+        style="border:none;"
+    ></iframe>
+    """
+    st.markdown(f'<div class="pdf-preview">{pdf_display}</div>', unsafe_allow_html=True)
+
+
 # ============================= UI =============================
 st.title("🎯 Resume Job Predictor")
-st.write("Upload your resume → Predict job → Apply → Prepare")
+st.write("Upload your resume → Preview → Predict job → Explore jobs")
 
-uploaded_file = st.file_uploader("📄 Upload Resume (PDF)", type=["pdf"])
+uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
 
 if uploaded_file:
-    resume_text = extract_text_from_resume(uploaded_file)
+    uploaded_file.seek(0)
 
-    st.subheader("📄 Resume Content")
-    st.text_area("Extracted Text", resume_text, height=350)
+    # ---- PDF PREVIEW (NEW) ----
+    st.subheader("📄 Resume Preview")
+    show_pdf(uploaded_file)
+
+    # ---- TEXT EXTRACTION (HIDDEN FROM UI) ----
+    uploaded_file.seek(0)
+    resume_text = extract_text_from_resume(uploaded_file)
 
     if st.button("🔍 Analyze Resume"):
         result = predict_job(resume_text)
         st.success(f"✅ Predicted Job Role: **{result}**")
 
-        # ============================= JOBS =============================
+        # ============================= JOB CARDS =============================
         st.markdown("## 💼 Live Job Openings")
+        jobs = fetch_job_listings(result)
 
         st.markdown('<div class="job-scroll-container">', unsafe_allow_html=True)
-
         for job in jobs:
             st.markdown(f"""
             <div class="job-scroll-card">
-            <h4>{job.get('title','N/A')}</h4>
-            <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
-            <p>📍 {job.get('location',{}).get('display_name','N/A')}</p>
-            <a href="{job.get('redirect_url','#')}" target="_blank">Apply →</a>
+                <h4>{job.get('title','N/A')}</h4>
+                <p><b>Company:</b> {job.get('company',{}).get('display_name','N/A')}</p>
+                <p>📍 {job.get('location',{}).get('display_name','N/A')}</p>
+                <a href="{job.get('redirect_url','#')}" target="_blank">Apply →</a>
             </div>
             """, unsafe_allow_html=True)
-
         st.markdown('</div>', unsafe_allow_html=True)
 
         # ============================= VIDEOS =============================
@@ -204,6 +233,6 @@ if uploaded_file:
                 st.video(url)
 
         with col2:
-            st.subheader("📝 Resume Tips")
+            st.subheader("📝 Resume Building Tips")
             for url in fetch_random_youtube_videos("resume building tips", fetch_count=8, display_count=2):
                 st.video(url)
