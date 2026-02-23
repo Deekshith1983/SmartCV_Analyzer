@@ -178,7 +178,7 @@ if uploaded_file:
         st.success(f"✅ Predicted Job Role: **{result}**")
 
         # ============================= JOBS =============================
-       st.markdown("## 💼 Live Job Openings")
+        st.markdown("## 💼 Live Job Openings")
 
         st.markdown('<div class="job-scroll-container">', unsafe_allow_html=True)
 
