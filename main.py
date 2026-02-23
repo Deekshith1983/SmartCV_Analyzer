@@ -17,103 +17,136 @@ st.set_page_config(
 
 # ============================= VANTA BACKGROUND =============================
 st.markdown("""
-<!-- ========== ANIMATED BACKGROUND (CSS + VANTA) ========== -->
-<div id="vanta-bg"></div>
+<!-- ========== AURORA GLASS UI THEME ========== -->
+<div class="aurora-bg"></div>
 
 <style>
-/* ---- Animated gradient fallback (always works) ---- */
+
+/* ---------- Background ---------- */
 .stApp {
-    background: linear-gradient(
-        -45deg,
-        #0f2027,
-        #203a43,
-        #2c5364,
-        #1a2980,
-        #26d0ce
-    );
-    background-size: 400% 400%;
-    animation: gradientBG 18s ease infinite;
+    background: radial-gradient(circle at 20% 20%, #1a2a6c, transparent 40%),
+                radial-gradient(circle at 80% 30%, #00c6ff, transparent 35%),
+                radial-gradient(circle at 50% 80%, #7f00ff, transparent 40%),
+                #0b1020;
+    animation: auroraMove 22s ease-in-out infinite;
+    color: #ffffff;
 }
 
-/* Gradient keyframes */
-@keyframes gradientBG {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+@keyframes auroraMove {
+    0%   { background-position: 0% 0%, 100% 0%, 50% 100%; }
+    50%  { background-position: 100% 50%, 0% 50%, 50% 0%; }
+    100% { background-position: 0% 0%, 100% 0%, 50% 100%; }
 }
 
-/* ---- VANTA canvas layer ---- */
-#vanta-bg {
-    position: fixed;
-    inset: 0;
-    z-index: -10;
-}
-
-/* ---- Glassmorphism UI ---- */
+/* ---------- Layout ---------- */
 .block-container {
     padding: 2.5rem 3rem;
 }
 
-.job-card {
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(14px);
-    border-radius: 18px;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
-    border-left: 6px solid #00eaff;
+/* ---------- Title ---------- */
+h1 {
+    text-align: center;
+    font-size: 3.2rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #00eaff, #9b5cff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeDown 1.2s ease;
 }
 
-/* ---- Buttons ---- */
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Glass Cards ---------- */
+.glass-card,
+.job-card,
+section[data-testid="stFileUploader"],
+textarea {
+    background: rgba(255, 255, 255, 0.10) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+}
+
+/* ---------- File Uploader ---------- */
+section[data-testid="stFileUploader"] {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ---------- Text Area ---------- */
+textarea {
+    color: #ffffff !important;
+    font-size: 0.95rem;
+}
+
+/* ---------- Buttons ---------- */
 .stButton > button {
-    background: linear-gradient(90deg, #00eaff, #7f00ff);
-    border-radius: 30px;
-    font-weight: 600;
-    transition: transform 0.3s ease;
+    background: linear-gradient(135deg, #00eaff, #9b5cff);
+    color: #fff;
+    border-radius: 32px;
+    padding: 0.7rem 2.2rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    transition: all 0.35s ease;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.35);
 }
 
 .stButton > button:hover {
-    transform: scale(1.06);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
 
-/* ---- Text areas ---- */
-textarea {
-    background: rgba(0,0,0,0.45) !important;
-    color: white !important;
+/* ---------- Job Cards ---------- */
+.job-card {
+    padding: 1.3rem;
+    margin-bottom: 1.2rem;
+    animation: fadeUp 0.8s ease forwards;
 }
 
-/* ---- Titles ---- */
-h1 {
-    text-align: center;
-    font-size: 3rem;
-    font-weight: 800;
-    background: linear-gradient(90deg, #00eaff, #7f00ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ---------- Links ---------- */
+a {
+    color: #00eaff !important;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Alerts ---------- */
+.stAlert {
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+}
+
+/* ---------- Videos ---------- */
+iframe {
+    border-radius: 18px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+}
+
+/* ---------- Section headers ---------- */
+h2, h3 {
+    font-weight: 700;
+    margin-top: 2rem;
+    animation: fadeUp 0.8s ease;
+}
+
 </style>
-
-<!-- VANTA scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    if (window.VANTA) {
-        VANTA.NET({
-            el: "#vanta-bg",
-            mouseControls: true,
-            touchControls: true,
-            color: 0x00eaff,
-            backgroundColor: 0x0f2027,
-            points: 14.0,
-            maxDistance: 22.0,
-            spacing: 18.0
-        });
-    }
-});
-</script>
 """, unsafe_allow_html=True)
-
 
 # ============================= LOAD ML MODELS =============================
 BASE_DIR = os.path.dirname(__file__)
