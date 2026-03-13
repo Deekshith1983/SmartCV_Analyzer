@@ -5,3 +5,6 @@ google-api-python-client
 joblib
 requests
 streamlit[pdf]
+pandas
+matplotlib
+python-docx

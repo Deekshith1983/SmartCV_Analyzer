@@ -1,83 +1,102 @@
 # Smart CV Analyzer
 
-## Overview
-Smart CV Analyzer is an AI-powered web application that predicts the most suitable job category for a user based on their uploaded resume. It also provides real-time job listings and curated YouTube video resources to help users prepare for interviews and build effective resumes.
+Smart CV Analyzer is a Streamlit application for:
+
+1. Job Prediction from uploaded resume text using pre-trained model artifacts.
+2. Resume Analysis against a Job Description with visual EDA insights and downloadable PDF report.
 
 ## Features
-- **Resume Upload:** Upload your resume in PDF format for instant analysis.
-- **Job Prediction:** Get an AI-predicted job category based on your resume content.
-- **Real-Time Job Listings:** View top job openings from platforms like Internshala and Unstop, tailored to your predicted job category.
-- **Interview & Resume Tips:** Watch curated YouTube videos for interview preparation and resume building, fetched in real-time.
+
+### Job Prediction page
+- Resume upload and preview.
+- Role prediction using saved model artifacts (`clf.pkl`, `tfidf.pkl`, `encoder.pkl`).
+- Resume EDA summary (term-level view).
+- Live job listings from Adzuna.
+- YouTube preparation videos.
+
+### Resume Analysis page
+- Inputs: Resume (PDF/DOCX) + Job Description text.
+- Visual EDA only (skills, keyword, education, experience, section evaluation).
+- Match score and category breakdown.
+- PDF download report for analysis summary.
 
 ## Tech Stack
-- **Backend:** Python, scikit-learn, joblib
-- **Frontend:** Streamlit
-- **ML Models:** TF-IDF Vectorizer, KNN/SVM Classifier, LabelEncoder
-- **APIs:**
-  - YouTube Data API v3 (for fetching video tips)
-  - JSearch API (for real-time job listings)
-- **PDF Parsing:** PyPDF2
+- Python, Streamlit
+- scikit-learn, joblib
+- pandas, matplotlib
+- PyPDF2, python-docx
+- requests, google-api-python-client
 
-## Setup Instructions
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/Deekshith1983/SmartCV_Analyzer.git
-   cd SmartCV_Analyzer
-   ```
-2. **Install Requirements:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. **API Keys:**
-   - Add your YouTube Data API key and JSearch API key to `.streamlit/secrets.toml`:
-     ```toml
-     [api_keys]
-     youtube = "YOUR_YOUTUBE_API_KEY"
-     jsearch = "YOUR_JSEARCH_API_KEY"
-     ```
-4. **Model Files:**
-   - Ensure `clf.pkl`, `tfidf.pkl`, and `encoder.pkl` are present in the project root. Train and export them if needed.
-5. **Run the App:**
-   ```bash
-   streamlit run main.py
-   ```
+## Setup
 
-## Usage
-1. Open the app in your browser (usually at http://localhost:8501).
-2. Upload your resume (PDF).
-3. Click "Analyze Resume" to get your predicted job category, job listings, and video tips.
+1. Clone repository.
 
-## File Structure
+```bash
+git clone https://github.com/Deekshith1983/SmartCV_Analyzer.git
+cd SmartCV_Analyzer
 ```
+
+2. Install dependencies.
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Configure API keys (local only).
+
+Copy the template and fill your real values:
+
+```bash
+copy .streamlit\secrets.toml.example .streamlit\secrets.toml
+```
+
+Template format:
+
+```toml
+[api_keys]
+youtube = "YOUR_YOUTUBE_API_KEY"
+adzuna_app_id = "YOUR_ADZUNA_APP_ID"
+adzuna_app_key = "YOUR_ADZUNA_APP_KEY"
+```
+
+4. Run app.
+
+```bash
+streamlit run main.py
+```
+
+## Security Notes
+
+- Never commit real API keys to GitHub.
+- `.streamlit/secrets.toml` is git-ignored.
+- Keep only `.streamlit/secrets.toml.example` in the repository.
+- If any key was exposed before, rotate/regenerate it immediately.
+
+## Upload Updated Project to GitHub
+
+Run these commands from project root:
+
+```bash
+git rm --cached .streamlit/secrets.toml
+git add .
+git commit -m "Update UI, EDA analysis flow, PDF report export, and secure secrets handling"
+git push origin main
+```
+
+If `git rm --cached` says file is not tracked, continue with the next commands.
+
+## Project Structure
+
+```text
 SmartCV_Analyzer/
 ├── main.py
-├── model.ipynb
+├── KnnModel.ipynb
 ├── clf.pkl
 ├── tfidf.pkl
 ├── encoder.pkl
 ├── requirements.txt
 ├── README.md
+├── .gitignore
 └── .streamlit/
-    └── secrets.toml
+    └── secrets.toml.example
 ```
-
-## Requirements
-- Python 3.8+
-- streamlit
-- scikit-learn
-- joblib
-- PyPDF2
-- google-api-python-client
-- requests
-
-## Acknowledgements
-- [YouTube Data API](https://developers.google.com/youtube/v3)
-- [JSearch API](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch)
-- [Streamlit](https://streamlit.io/)
-
-## License
-This project is licensed under the MIT License.
-
-## 🔗 Live Demo
-
-🚀 **[Click here to try the deployed app](https://job-predictor.streamlit.app/)**
