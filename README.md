@@ -5,6 +5,10 @@ Smart CV Analyzer is a Streamlit application for:
 1. Job Prediction from uploaded resume text using pre-trained model artifacts.
 2. Resume Analysis against a Job Description with visual EDA insights and downloadable PDF report.
 
+## View App
+
+Live demo: https://smartcvanalyzer-t4hc5tnsxsqqsc4eb4bbuk.streamlit.app/
+
 ## Features
 
 ### Job Prediction page
